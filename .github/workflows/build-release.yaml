@@ -22,7 +22,7 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker-compose --env-file .env pull
+          docker-compose --env-file ../../.env pull 
 
       - name: Save Docker images to tar file
         run: |
