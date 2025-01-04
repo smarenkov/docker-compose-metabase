@@ -30,7 +30,7 @@ jobs:
       - name: Save Docker images to tar file
         id: save
         run: |
-          docker save postgres:17.2 metabase/metabase:latest -o metabase.tar
+          docker save postgres:17.2 metabase/metabase:latest -o docker_image.tar
 
       - name: Create a Release and upload Docker image
         id: create_release
@@ -38,5 +38,36 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: metabase.tar
+          files: docker_image.tar
+
+      - name: Download Docker image tar on the server
+        id: download
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP << 'EOF'
+            TAG_NAME=${GITHUB_REF##*/}
+            TAR_URL=https://github.com/smarenkov/metabase/releases/download/$TAG_NAME/docker_image.tar
+            wget -O ~/docker_image.tar $TAR_URL
+          EOF
+  
+      - name: Deploy Docker container on server
+        id: deploy
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP << 'EOF'
+            docker load -i ~/docker_image.tar
+            docker stop metabase || true
+            docker rm metabase || true
+            docker-compose up -d
+            rm ~/docker_image.tar
+          EOF
 
