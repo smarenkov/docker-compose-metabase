@@ -55,9 +55,11 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
 
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP << 'EOF'
+            mkdir -p ~/metabase
+
             BASE_URL=https://github.com/smarenkov/metabase/releases/download/${{ github.ref_name }}
-            wget -O ./metabase/docker_images.tar $BASE_URL/docker_images.tar
-            wget -O ./metabase/docker-compose.yaml $BASE_URL/docker-compose.yaml
+            wget -O ~/metabase/docker_images.tar $BASE_URL/docker_images.tar
+            wget -O ~/metabase/docker-compose.yaml $BASE_URL/docker-compose.yaml
           EOF
   
       - name: Deploy Docker container on server
@@ -68,9 +70,9 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP << 'EOF'
-              docker load -i ./metabase/docker_images.tar
+              docker load -i ~/metabase/docker_images.tar
               docker stop metabase || true
               docker rm metabase || true
-              docker-compose -f ./metabase/docker-compose.yaml up -d
+              docker-compose -f ~/metabase/docker-compose.yaml up -d
               rm ~/metabase/docker_images.tar
           EOF
