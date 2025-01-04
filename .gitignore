@@ -3,3 +3,7 @@
 
 # Environment
 .env
+
+# IDE
+.idea
+.vscode
