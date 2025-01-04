@@ -17,11 +17,11 @@ jobs:
           sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
 
-      - name: Build Docker image
+      - name: Build Docker images
         run: |
-          docker-compose pull
+          docker-compose --env-file .env pull
 
-      - name: Save Docker image to tar file
+      - name: Save Docker images to tar file
         run: |
           docker save postgres:17.2 metabase/metabase:latest -o metabase.tar
 
