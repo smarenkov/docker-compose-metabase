@@ -51,7 +51,7 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP << 'EOF'
-            TAG_NAME=$(basename $GITHUB_REF)
+            TAG_NAME=$(echo $GITHUB_REF | sed 's|refs/tags/||')
             TAR_URL=https://github.com/smarenkov/metabase/releases/download/$TAG_NAME/docker_images.tar
             wget -O ~/docker_images.tar $TAR_URL
           EOF
