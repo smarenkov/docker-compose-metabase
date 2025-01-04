@@ -38,7 +38,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: docker_images.tar
+          files: |
+            docker_images.tar
+            docker-compose.yaml
 
       - name: Download Docker image tar on the server
         id: download
@@ -51,10 +53,11 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP << 'EOF'
-            TAG_NAME=${{ github.ref_name }}
-            TAR_URL=https://github.com/smarenkov/metabase/releases/download/$TAG_NAME/docker_images.tar
-            wget -O ~/docker_images.tar $TAR_URL
+            BASE_URL=https://github.com/smarenkov/metabase/releases/download/${{ github.ref_name }}
+            wget -O ~/metabase/docker_images.tar $BASE_URL/docker_images.tar
+            wget -O ~/metabase/docker-compose.yaml $BASE_URL/docker-compose.yaml
           EOF
   
       - name: Deploy Docker container on server
@@ -65,10 +68,9 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP << 'EOF'
-            docker load -i ~/docker_images.tar
-            docker stop metabase || true
-            docker rm metabase || true
-            docker-compose up -d
-            rm ~/docker_images.tar
+              docker load -i ~/metabase/docker_images.tar
+              docker stop metabase || true
+              docker rm metabase || true
+              docker-compose -f ~/metabase/docker-compose.yaml up -d
+              rm ~/metabase/docker_images.tar
           EOF
-
