@@ -71,8 +71,14 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP << 'EOF'
               docker load -i ~/metabase/docker_images.tar
-              docker stop metabase || true
-              docker rm metabase || true
+              
+              docker stop metabase-app || true
+              docker rm metabase-app || true
+
+              docker stop metabase-db || true
+              docker rm metabase-db || true
+
               docker-compose -f ~/metabase/docker-compose.yaml up -d
               rm ~/metabase/docker_images.tar
+              rm ~/metabase/docker-compose.yaml
           EOF
