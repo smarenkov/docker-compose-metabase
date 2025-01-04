@@ -3,9 +3,6 @@ name: Build and Release Docker Image
 on:
   push:
     tags: 'v*' # Triggers on versioned tags
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
 
 jobs:
   build-and-upload:
