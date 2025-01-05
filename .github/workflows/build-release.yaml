@@ -5,7 +5,7 @@ on:
     tags: 'v*' # Triggers on versioned tags
 
 jobs:
-  build-and-upload:
+  upload-release:
     runs-on: ubuntu-latest
 
     permissions:
@@ -26,6 +26,10 @@ jobs:
             docker-compose.yaml
             .env.example
 
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
       - name: Download Docker image tar on the server
         id: download
         if: startsWith(github.ref, 'refs/tags/')
