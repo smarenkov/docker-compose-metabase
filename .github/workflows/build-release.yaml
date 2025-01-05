@@ -28,7 +28,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Download Docker image tar on the server
         id: download
@@ -65,5 +65,5 @@ jobs:
               docker rm metabase-db || true
 
               [ ! -f ~/metabase/.env ] && cp ~/metabase/.env.example ~/metabase/.env && echo "Created .env from .env.example"
-              docker-compose -f ~/metabase/docker-compose.yaml up -d
+              docker-compose -f ~/metabase/docker-compose.yaml up --build -d
           EOF
