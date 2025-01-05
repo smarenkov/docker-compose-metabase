@@ -16,22 +16,6 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Install Docker Compose
-        id: docker_compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-
-      - name: Build Docker images
-        id: build
-        run: |
-          docker-compose pull 
-
-      - name: Save Docker images to tar file
-        id: save
-        run: |
-          docker save postgres:17.2 metabase/metabase:latest -o docker_images.tar
-
       - name: Create a Release and upload Docker image
         id: create_release
         uses: softprops/action-gh-release@v2
@@ -39,8 +23,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            docker_images.tar
             docker-compose.yaml
+            .env.example
 
       - name: Download Docker image tar on the server
         id: download
@@ -58,8 +42,8 @@ jobs:
             mkdir -p ~/metabase
 
             BASE_URL=https://github.com/smarenkov/metabase/releases/download/${{ github.ref_name }}
-            wget -O ~/metabase/docker_images.tar $BASE_URL/docker_images.tar
             wget -O ~/metabase/docker-compose.yaml $BASE_URL/docker-compose.yaml
+            wget -O ~/metabase/docker-compose.yaml $BASE_URL/.env.example
           EOF
   
       - name: Deploy Docker container on server
@@ -70,15 +54,12 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP << 'EOF'
-              docker load -i ~/metabase/docker_images.tar
-              
               docker stop metabase-app || true
               docker rm metabase-app || true
 
               docker stop metabase-db || true
               docker rm metabase-db || true
 
+              [ ! -f ~/metabase/.env ] && cp ~/metabase/.env.example ~/metabase/.env && echo "Created .env from .env.example"
               docker-compose -f ~/metabase/docker-compose.yaml up -d
-              rm ~/metabase/docker_images.tar
-              rm ~/metabase/docker-compose.yaml
           EOF
