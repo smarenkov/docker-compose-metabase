@@ -24,7 +24,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             docker-compose.yaml
-            default.env
+            .env.example
 
       - name: Download Docker image tar on the server
         id: download
@@ -43,7 +43,7 @@ jobs:
 
             BASE_URL=https://github.com/smarenkov/metabase/releases/download/${{ github.ref_name }}
             wget -O ~/metabase/docker-compose.yaml $BASE_URL/docker-compose.yaml
-            wget -O ~/metabase/docker-compose.yaml $BASE_URL/default.env
+            wget -O ~/metabase/.env.example $BASE_URL/default.env.example
           EOF
   
       - name: Deploy Docker container on server
@@ -60,6 +60,6 @@ jobs:
               docker stop metabase-db || true
               docker rm metabase-db || true
 
-              [ ! -f ~/metabase/.env ] && cp ~/metabase/default.env ~/metabase/.env && echo "Created .env from default.env"
+              [ ! -f ~/metabase/.env ] && cp ~/metabase/.env.example ~/metabase/.env && echo "Created .env from .env.example"
               docker-compose -f ~/metabase/docker-compose.yaml up -d
           EOF
