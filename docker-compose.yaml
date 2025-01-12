@@ -30,7 +30,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      MB_SITE_URL: ${MB_SITE_URL}
       MB_DB_TYPE: ${MB_DB_TYPE}
       MB_DB_DBNAME: ${MB_DB_DBNAME}
       MB_DB_PORT: ${MB_DB_PORT}
