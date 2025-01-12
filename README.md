@@ -1,6 +1,6 @@
-# Metabase
+# Docker Compose Metabase
 
-Self-hosted Metabase setup using Docker Compose.
+>Self-hosted Metabase setup using Docker Compose.
 
 ## Overview
 
